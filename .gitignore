@@ -1,0 +1,121 @@
+# ==============================================================================
+# GKJW SUKUN INVENTORY & ARCHIVE SYSTEM v2.0 - GITIGNORE SPECIFICATION
+# Monorepo Security Guardrails: Zero Credentials, Zero Secrets, Zero Data Leaks
+# ==============================================================================
+
+# --- 1. Environment & Secret Configurations (Strict Security) ---
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+
+# --- 2. Local Storage & Upload Directories ---
+storage/uploads/*
+!storage/uploads/.gitkeep
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+backend/storage/uploads/photos/items/*
+!backend/storage/uploads/photos/items/.gitkeep
+backend/storage/uploads/photos/locations/*
+!backend/storage/uploads/photos/locations/.gitkeep
+backend/storage/uploads/documents/*
+!backend/storage/uploads/documents/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+uploads/
+*.webp
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.xlsx
+!frontend/public/Logo Gkjw Hitam.png
+
+# --- 3. Python Cache, Artifacts & Virtual Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# --- 4. Node.js & Frontend Build Outputs ---
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+frontend/dist/
+frontend/dist-ssr/
+.vite/
+*.local
+
+# --- 5. Databases & Local SQLite / Dump Files ---
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+*.dump
+*.bak
+
+# --- 6. Operating System & IDE Specific Files ---
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# --- 7. Logs & Temporary Scripts ---
+*.log
+backend/scripts/scratch/
+scratch/
+tmp/
+temp/
+
+# --- 8. Internal Architectural Blueprints & AI System Directives ---
+MASTER_BLUEPRINT.md
+AGENTS.md
+SKILL.md
+TASTE_SKILL.md

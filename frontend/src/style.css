@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Surface & Backgrounds (Warm Editorial Paper) */
+  --bg-canvas: #F6F5F0;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #ECEAE2;
+
+  /* Typography & Ink Borders */
+  --ink-primary: #141413;
+  --ink-secondary: #52514E;
+  --ink-muted: #85837E;
+  --border-strong: 1.5px solid #141413;
+  --border-subtle: 1px solid #D6D3C9;
+
+  /* Brand & Action Accents */
+  --accent-primary: #C84B31;
+  --accent-hover: #A83820;
+  --accent-secondary: #1E3A2F;
+
+  /* Semantic Condition Tokens */
+  --status-good-bg: #E6F4EA;
+  --status-good-ink: #137333;
+  --status-warn-bg: #FEF7E0;
+  --status-warn-ink: #B06000;
+  --status-bad-bg: #FCE8E6;
+  --status-bad-ink: #C5221F;
+  --status-archive-bg: #E8EAED;
+  --status-archive-ink: #3C4043;
+
+  /* Tactile Hard Offset Shadow */
+  --shadow-tactile: 2px 2px 0px #141413;
+  --shadow-tactile-lg: 4px 4px 0px #141413;
+}
+
+/* Base Archival Styling */
+body {
+  background-color: var(--bg-canvas);
+  color: var(--ink-primary);
+}
+
+/* Monospace font variant for aligning numbers & IDs */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tactile Button Components (Zero AI Slop) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--accent-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink-primary);
+  box-shadow: 2px 2px 0px var(--ink-primary);
+  transition: all 100ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--ink-primary);
+  background-color: var(--accent-hover);
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--ink-primary);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--bg-surface);
+  color: var(--ink-primary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink-primary);
+  box-shadow: 2px 2px 0px var(--ink-primary);
+  transition: all 100ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--ink-primary);
+  background-color: var(--bg-subtle);
+}
+
+.btn-secondary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--ink-primary);
+}
+
+/* Crisp Input Styling */
+.input-tactile {
+  width: 100%;
+  height: 42px;
+  padding: 0.5rem 0.75rem;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--ink-primary);
+  border-radius: 6px;
+  color: var(--ink-primary);
+  font-size: 0.875rem;
+  transition: outline 80ms ease-in-out;
+}
+
+.input-tactile:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
