@@ -18,27 +18,27 @@
       </router-link>
 
       <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-1 font-medium text-xs sm:text-sm">
+      <nav class="hidden md:flex items-center gap-1.5 font-medium text-xs sm:text-sm">
         <!-- Public Navigation (When not authenticated) -->
         <template v-if="!authStore.isAuthenticated">
           <button
             @click="navigateTo('hero')"
-            class="px-3 py-1.5 rounded-md border-[1.5px] border-transparent hover:border-ink-primary hover:bg-paper-subtle transition-all duration-100 font-semibold cursor-pointer"
-            :class="{ '!border-ink-primary bg-paper-subtle shadow-tactile': isCurrentSection('hero') }"
+            class="px-3 py-1.5 rounded-md border-[1.5px] transition-all duration-150 font-semibold cursor-pointer outline-none focus:outline-none select-none"
+            :class="isCurrentSection('hero') ? '!border-ink-primary bg-paper-subtle shadow-tactile text-ink-primary' : 'border-transparent text-ink-secondary hover:text-ink-primary hover:bg-paper-subtle/60'"
           >
             Beranda
           </button>
           <button
             @click="navigateTo('guide')"
-            class="px-3 py-1.5 rounded-md border-[1.5px] border-transparent hover:border-ink-primary hover:bg-paper-subtle transition-all duration-100 font-semibold cursor-pointer"
-            :class="{ '!border-ink-primary bg-paper-subtle shadow-tactile': isCurrentSection('guide') }"
+            class="px-3 py-1.5 rounded-md border-[1.5px] transition-all duration-150 font-semibold cursor-pointer outline-none focus:outline-none select-none"
+            :class="isCurrentSection('guide') ? '!border-ink-primary bg-paper-subtle shadow-tactile text-ink-primary' : 'border-transparent text-ink-secondary hover:text-ink-primary hover:bg-paper-subtle/60'"
           >
             Panduan Alur
           </button>
           <button
             @click="navigateTo('pokja')"
-            class="px-3 py-1.5 rounded-md border-[1.5px] border-transparent hover:border-ink-primary hover:bg-paper-subtle transition-all duration-100 font-semibold cursor-pointer"
-            :class="{ '!border-ink-primary bg-paper-subtle shadow-tactile': isCurrentSection('pokja') }"
+            class="px-3 py-1.5 rounded-md border-[1.5px] transition-all duration-150 font-semibold cursor-pointer outline-none focus:outline-none select-none"
+            :class="isCurrentSection('pokja') ? '!border-ink-primary bg-paper-subtle shadow-tactile text-ink-primary' : 'border-transparent text-ink-secondary hover:text-ink-primary hover:bg-paper-subtle/60'"
           >
             24 POKJA
           </button>
@@ -114,7 +114,7 @@
           Pengawasan Perbendaharaan Jemaat (PBJ) &bull; 24 Komisi / POKJA &bull; Standalone Web System v2.0
         </p>
         
-        <!-- Elegant Developer Watermark (Task 6) -->
+        <!-- Elegant Developer Watermark -->
         <div class="pt-3 mt-3 border-t border-paper-border/80 text-[10px] sm:text-[11px] text-ink-secondary flex items-center justify-center gap-1.5 flex-wrap">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-church-terracotta"></span>
           <span>Designed &amp; Engineered with precision by</span>
@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import LoginModal from './components/auth/LoginModal.vue'
@@ -144,35 +144,108 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isLoginOpen = ref(false)
+const activeSection = ref('hero')
+
+let isManualNavigating = false
+let navigationTimer = null
 
 function isCurrentSection(sectionId) {
   if (route.path !== '/') return false
-  if (sectionId === 'hero' && (!route.hash || route.hash === '#hero')) return true
-  return route.hash === `#${sectionId}`
+  return activeSection.value === sectionId
 }
 
 function navigateTo(sectionId) {
+  // Langsung reaktif ganti active tab seketika tanpa perlu reload
+  activeSection.value = sectionId
+
   if (route.path !== '/') {
     router.push({ path: '/', hash: `#${sectionId}` })
+    return
+  }
+
+  // Kunci scroll listener sejenak agar animasi scrolling mulus tidak bergetar (jitter)
+  isManualNavigating = true
+  if (navigationTimer) clearTimeout(navigationTimer)
+  navigationTimer = setTimeout(() => {
+    isManualNavigating = false
+  }, 900)
+
+  if (sectionId === 'hero') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    history.replaceState(null, null, window.location.pathname)
   } else {
-    if (sectionId === 'hero') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      history.replaceState(null, null, ' ')
-    } else {
-      const el = document.getElementById(sectionId)
-      if (el) {
-        const headerOffset = 70
-        const elementPosition = el.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        })
-        history.replaceState(null, null, `#${sectionId}`)
-      }
+    const el = document.getElementById(sectionId)
+    if (el) {
+      const headerOffset = 75
+      const elementPosition = el.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+      history.replaceState(null, null, `#${sectionId}`)
     }
   }
 }
+
+// Scrollspy ringan: deteksi posisi scroll layar agar navbar otomatis menandai menu yang sedang dilihat
+function handleScroll() {
+  if (route.path !== '/' || isManualNavigating) return
+
+  const scrollY = window.scrollY
+  const offset = 120
+
+  const guideEl = document.getElementById('guide')
+  const pokjaEl = document.getElementById('pokja')
+
+  if (!guideEl || !pokjaEl) return
+
+  const guideTop = guideEl.offsetTop - offset
+  const pokjaTop = pokjaEl.offsetTop - offset
+
+  if (scrollY >= pokjaTop) {
+    if (activeSection.value !== 'pokja') {
+      activeSection.value = 'pokja'
+    }
+  } else if (scrollY >= guideTop) {
+    if (activeSection.value !== 'guide') {
+      activeSection.value = 'guide'
+    }
+  } else {
+    if (activeSection.value !== 'hero') {
+      activeSection.value = 'hero'
+    }
+  }
+}
+
+// Watch rute jika ada perubahan hash atau navigasi eksternal
+watch(
+  () => [route.path, route.hash],
+  ([newPath, newHash]) => {
+    if (newPath === '/') {
+      if (newHash === '#pokja') activeSection.value = 'pokja'
+      else if (newHash === '#guide') activeSection.value = 'guide'
+      else if (!newHash || newHash === '#hero') activeSection.value = 'hero'
+    }
+  }
+)
+
+onMounted(() => {
+  // Inisialisasi awal active section dari url hash saat pertama dibuka
+  if (route.path === '/') {
+    const currentHash = window.location.hash
+    if (currentHash === '#pokja') activeSection.value = 'pokja'
+    else if (currentHash === '#guide') activeSection.value = 'guide'
+    else activeSection.value = 'hero'
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  if (navigationTimer) clearTimeout(navigationTimer)
+})
 
 function handleLogout() {
   authStore.logout()
