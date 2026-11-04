@@ -75,8 +75,8 @@ def reset_and_seed():
         db.commit()
         print(f"      -> {len(lokasi_map)} Titik lokasi / ruangan berhasil didaftarkan.")
 
-        # 4. SEED USER ACCOUNTS (Super Admin & Petugas POKJA)
-        print("[4/6] Menyiapkan Akun Pengurus Resmi...")
+        # 4. SEED USER ACCOUNTS (Super Admin & 24 Petugas POKJA)
+        print("[4/6] Menyiapkan 25 Akun Pengurus Resmi (Super Admin & 24 Petugas Komisi)...")
         admin = User(
             username="admin_sukun",
             name="Super Admin Inventaris",
@@ -85,20 +85,36 @@ def reset_and_seed():
             role=UserRole.SUPER_ADMIN,
             is_active=True
         )
-        petugas = User(
+        db.add(admin)
+
+        default_petugas_hash = get_password_hash("PetugasGKJW2025!")
+        all_pokjas_list = db.query(Pokja).order_by(Pokja.id.asc()).all()
+        for p in all_pokjas_list:
+            petugas_user = User(
+                username=f"petugas_{p.code.lower()}",
+                name=f"Petugas {p.name}",
+                email="multimedia.gkjwsukun@gmail.com",
+                password_hash=default_petugas_hash,
+                role=UserRole.POKJA_ADMIN,
+                pokja_id=p.id,
+                is_active=True
+            )
+            db.add(petugas_user)
+
+        alias_petugas = User(
             username="petugas_pokja",
-            name="Petugas POKJA",
+            name="Petugas POKJA (MVI)",
             email="multimedia.gkjwsukun@gmail.com",
-            password_hash=get_password_hash("PetugasGKJW2025!"),
+            password_hash=default_petugas_hash,
             role=UserRole.POKJA_ADMIN,
-            pokja_id=1,  # MVI
+            pokja_id=1,
             is_active=True
         )
-        db.add(admin)
-        db.add(petugas)
+        db.add(alias_petugas)
+
         db.commit()
         db.refresh(admin)
-        print(f"      -> Akun 'admin_sukun' (Super Admin) & 'petugas_pokja' siap digunakan.")
+        print(f"      -> 25 Akun Resmi ('admin_sukun' + 24 Petugas Komisi) siap digunakan.")
 
         # 5. LOAD MASTER JENIS BARANG (Kategori & Nama Barang)
         print("[5/6] Membaca Master Jenis Barang...")

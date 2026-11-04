@@ -67,7 +67,7 @@
 
         <button
           v-if="authStore.canManage"
-          @click="showCreateModal = true"
+          @click="openCreateModal"
           class="btn-primary text-xs py-2 px-3.5 w-full sm:w-auto"
         >
           + Tambah Barang Baru
@@ -106,10 +106,15 @@
         <!-- 2. POKJA Selector -->
         <div>
           <label class="block text-xs font-bold uppercase text-ink-secondary mb-1">
-            Komisi / POKJA ({{ pokjas.length }})
+            Komisi / POKJA {{ authStore.isPokjaAdmin ? '(Terkunci Komisi Anda)' : `(${pokjas.length})` }}
           </label>
-          <select v-model="selectedPokja" @change="fetchData" class="input-tactile text-xs h-9 w-full">
-            <option value="">Semua Komisi / POKJA</option>
+          <select
+            v-model="selectedPokja"
+            :disabled="authStore.isPokjaAdmin"
+            @change="fetchData"
+            class="input-tactile text-xs h-9 w-full disabled:bg-paper-subtle disabled:opacity-85 disabled:cursor-not-allowed"
+          >
+            <option v-if="!authStore.isPokjaAdmin" value="">Semua Komisi / POKJA</option>
             <option v-for="p in pokjas" :key="p.code" :value="p.code">
               {{ p.code }} — {{ p.name }}
             </option>
@@ -481,8 +486,18 @@
         <form @submit.prevent="handleCreateSubmit" class="space-y-4 text-xs">
           <!-- POKJA Selector -->
           <div>
-            <label class="block font-bold uppercase text-ink-secondary mb-1">Komisi / POKJA *</label>
-            <select v-model="createForm.pokja_code" required class="input-tactile text-xs">
+            <label class="block font-bold uppercase text-ink-secondary mb-1">
+              Komisi / POKJA *
+              <span v-if="authStore.isPokjaAdmin" class="text-[10px] font-mono font-normal text-church-terracotta ml-1">
+                (Terkunci otomatis sesuai penugasan Anda)
+              </span>
+            </label>
+            <select
+              v-model="createForm.pokja_code"
+              :disabled="authStore.isPokjaAdmin"
+              required
+              class="input-tactile text-xs disabled:bg-paper-subtle disabled:opacity-85 disabled:cursor-not-allowed"
+            >
               <option value="">Pilih POKJA...</option>
               <option v-for="p in pokjas" :key="p.code" :value="p.code">
                 {{ p.code }} — {{ p.name }} (Stiker terakhir: {{ p.last_sequence }})
@@ -997,9 +1012,26 @@ async function fetchPokjas() {
   try {
     const res = await api.get('/pokja')
     pokjas.value = res.data
+    if (authStore.isPokjaAdmin && authStore.user?.pokja_id) {
+      const assigned = pokjas.value.find((p) => p.id === authStore.user.pokja_id)
+      if (assigned) {
+        selectedPokja.value = assigned.code
+        createForm.value.pokja_code = assigned.code
+      }
+    }
   } catch (err) {
     console.error(err)
   }
+}
+
+function openCreateModal() {
+  if (authStore.isPokjaAdmin && authStore.user?.pokja_id) {
+    const assigned = pokjas.value.find((p) => p.id === authStore.user.pokja_id)
+    if (assigned) {
+      createForm.value.pokja_code = assigned.code
+    }
+  }
+  showCreateModal.value = true
 }
 
 async function fetchLocations() {

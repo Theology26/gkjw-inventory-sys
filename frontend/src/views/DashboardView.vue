@@ -5,6 +5,9 @@
       <div>
         <h2 class="text-lg sm:text-xl font-bold tracking-tight">Ringkasan Inventaris &amp; Dokumen Gereja</h2>
         <p class="text-xs text-ink-secondary mt-0.5">
+          <span v-if="authStore.isPokjaAdmin" class="inline-block px-1.5 py-0.5 rounded bg-church-terracotta/10 text-church-terracotta font-mono font-bold mr-1 border border-church-terracotta/30">
+            KOMISI: {{ userPokja?.name || authStore.user?.name }}
+          </span>
           Informasi aset barang milik 24 Komisi / POKJA GKJW Sukun untuk Majelis dan Pengawas Perbendaharaan (PBJ).
         </p>
       </div>
@@ -23,7 +26,9 @@
         <div class="text-2xl sm:text-3xl font-mono font-extrabold mt-1 sm:mt-2 text-ink-primary">
           {{ totalActiveUnits }}
         </div>
-        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block">Sudah Diberi Stiker</span>
+        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block font-mono">
+          {{ authStore.isPokjaAdmin ? `Aset Khusus ${userPokja?.code || 'POKJA'}` : 'Sudah Diberi Stiker' }}
+        </span>
       </div>
 
       <div class="bg-paper-surface p-3.5 sm:p-5 border-[1.5px] border-ink-primary rounded-md shadow-tactile">
@@ -31,7 +36,9 @@
         <div class="text-2xl sm:text-3xl font-mono font-extrabold mt-1 sm:mt-2 text-status-good-ink">
           {{ totalGoodUnits }}
         </div>
-        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block">Siap Digunakan Ibadah</span>
+        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block font-mono">
+          {{ authStore.isPokjaAdmin ? 'Siap Pakai di Komisi' : 'Siap Digunakan Ibadah' }}
+        </span>
       </div>
 
       <div class="bg-paper-surface p-3.5 sm:p-5 border-[1.5px] border-ink-primary rounded-md shadow-tactile">
@@ -39,7 +46,7 @@
         <div class="text-2xl sm:text-3xl font-mono font-extrabold mt-1 sm:mt-2 text-status-bad-ink">
           {{ totalDamagedUnits }}
         </div>
-        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block">Kurang Baik &amp; Rusak</span>
+        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block font-mono">Kurang Baik &amp; Rusak</span>
       </div>
 
       <div class="bg-paper-surface p-3.5 sm:p-5 border-[1.5px] border-ink-primary rounded-md shadow-tactile">
@@ -47,7 +54,7 @@
         <div class="text-2xl sm:text-3xl font-mono font-extrabold mt-1 sm:mt-2 text-church-terracotta">
           {{ pokjas.length || 24 }}
         </div>
-        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block">Seluruh Komisi Aktif</span>
+        <span class="text-[10px] sm:text-[11px] text-ink-muted mt-0.5 block font-mono">Seluruh Komisi Aktif</span>
       </div>
     </div>
 
@@ -74,8 +81,21 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-paper-border font-mono text-xs">
-            <tr v-for="p in pokjas" :key="p.code" class="hover:bg-paper-subtle/30">
-              <td class="py-2 px-3 font-bold text-church-terracotta">{{ p.code }}</td>
+            <tr
+              v-for="p in pokjas"
+              :key="p.code"
+              class="hover:bg-paper-subtle/30 transition-colors"
+              :class="{ 'bg-church-terracotta/10 font-bold border-l-4 !border-l-church-terracotta': authStore.user?.pokja_id === p.id }"
+            >
+              <td class="py-2 px-3 font-bold text-church-terracotta">
+                {{ p.code }}
+                <span
+                  v-if="authStore.user?.pokja_id === p.id"
+                  class="ml-1 text-[9px] px-1 py-0.5 bg-church-terracotta text-white rounded font-mono font-normal inline-block"
+                >
+                  KOMISI ANDA
+                </span>
+              </td>
               <td class="py-2 px-3 font-sans font-medium text-ink-primary">{{ p.name }}</td>
               <td class="py-2 px-3 text-center font-bold">
                 <span class="px-2 py-0.5 bg-paper-canvas border border-paper-border rounded">
@@ -95,10 +115,18 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '../api'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 const pokjas = ref([])
 const units = ref([])
 const isLoading = ref(true)
+
+const userPokja = computed(() => {
+  if (!authStore.user?.pokja_id) return null
+  return pokjas.value.find((p) => p.id === authStore.user.pokja_id)
+})
 
 onMounted(async () => {
   try {
